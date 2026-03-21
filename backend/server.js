@@ -46,3 +46,32 @@ app.put("/updateGoal/:name", async (req, res) => {
     res.status(500).send(err);
   }
 });
+
+app.get("/reminders", async (req, res) => {
+  try {
+    const goals = await Goal.find()
+      .sort({ dueDate: 1 })   // nearest date first
+     //.limit(3);              // only top 3
+
+    res.json(goals);
+  } catch (err) {
+    res.status(500).send(err);
+  }
+});
+
+app.get("/sortedGoals", async (req, res) => {
+  try {
+    const goals = await Goal.find();
+
+    const sorted = goals.sort((a, b) => {
+      const remainingA = a.targetAmount - a.savedAmount;
+      const remainingB = b.targetAmount - b.savedAmount;
+
+      return remainingA - remainingB;
+    });
+
+    res.json(sorted);
+  } catch (err) {
+    res.status(500).send(err);
+  }
+});
