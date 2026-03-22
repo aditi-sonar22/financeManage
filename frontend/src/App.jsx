@@ -9,13 +9,18 @@ function App() {
   });
 
   const [goals, setGoals] = useState([]);
+  const [reminders, setReminders] = useState([]); // ✅ added
 
-  // fetch goals from backend
   const fetchGoals = async () => {
     const res = await fetch("http://localhost:5000/goals");
     const data = await res.json();
-    console.log(data);
     setGoals(data);
+  };
+
+  const fetchReminders = async () => {   // ✅ added
+    const res = await fetch("http://localhost:5000/reminders");
+    const data = await res.json();
+    setReminders(data);
   };
 
   useEffect(() => {
@@ -36,7 +41,7 @@ function App() {
     });
 
     alert("Goal Added!");
-    fetchGoals(); // refresh list
+    fetchGoals();
   };
 
   return (
@@ -50,33 +55,62 @@ function App() {
 
       <button onClick={handleSubmit}>Add Goal</button>
 
+      <button onClick={fetchReminders} style={{ marginLeft: "10px" }}>
+        Show Priority Goals
+      </button>
+
       <h2>All Goals</h2>
 
       {goals.map((g, index) => (
-        <div style={{
-  border: "1px solid #ccc",
-  borderRadius: "10px",
-  padding: "15px",
-  margin: "10px",
-  boxShadow: "2px 2px 10px rgba(0,0,0,0.1)"
-}}>
+        <div key={index} style={{
+          border: "1px solid #ccc",
+          borderRadius: "10px",
+          padding: "15px",
+          margin: "10px",
+          boxShadow: "2px 2px 10px rgba(0,0,0,0.1)"
+        }}>
           <p><b>Name:</b> {g.name}</p>
           <p><b>Target:</b> ₹{g.targetAmount}</p>
           <p><b>Saved:</b> ₹{g.savedAmount}</p>
           <p><b>Due Date:</b> {new Date(g.dueDate).toLocaleDateString()}</p>
-          <p>
-  <b>Progress:</b>{" "}
-  {((g.savedAmount / g.targetAmount) * 100).toFixed(2)}%
-</p>
 
-<button onClick={async () => {
-  await fetch(`http://localhost:5000/deleteGoal/${g._id}`, {
-    method: "DELETE"
-  });
-  fetchGoals();
-}}>
-  Delete
-</button>
+          <p>
+            <b>Progress:</b>{" "}
+            {((g.savedAmount / g.targetAmount) * 100).toFixed(2)}%
+          </p>
+
+          <button onClick={async () => {
+            await fetch(`http://localhost:5000/deleteGoal/${g._id}`, {
+              method: "DELETE"
+            });
+            fetchGoals();
+          }}>
+            Delete
+          </button>
+
+          <button onClick={async () => {
+            const amount = prompt("Enter amount to add");
+
+            await fetch(`http://localhost:5000/updateGoal/${g.name}`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ amount: Number(amount) })
+            });
+
+            fetchGoals();
+          }} style={{ marginLeft: "10px" }}>
+            Update
+          </button>
+        </div>
+      ))}
+
+      <h2>Priority Goals</h2>
+
+      {reminders.map((g, index) => (
+        <div key={index}>
+          <p>{g.name} - {new Date(g.dueDate).toLocaleDateString()}</p>
         </div>
       ))}
     </div>
