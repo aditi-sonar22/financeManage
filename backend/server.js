@@ -5,6 +5,8 @@ const app = express();
 
 const cors = require("cors");
 app.use(cors());
+
+app.use(express.json());
 mongoose.connect("mongodb://aditi:Adi2205@ac-4adycx9-shard-00-00.smvhc8h.mongodb.net:27017,ac-4adycx9-shard-00-01.smvhc8h.mongodb.net:27017,ac-4adycx9-shard-00-02.smvhc8h.mongodb.net:27017/?ssl=true&replicaSet=atlas-ysqi6e-shard-0&authSource=admin&appName=Cluster0")
 .then(() => {
     console.log("Connected to MongoDB");
@@ -14,7 +16,6 @@ mongoose.connect("mongodb://aditi:Adi2205@ac-4adycx9-shard-00-00.smvhc8h.mongodb
 
 
 
-app.use(express.json());
 
 app.get("/", (req, res) => {
     res.send("Backend is running");
@@ -75,6 +76,24 @@ app.get("/sortedGoals", async (req, res) => {
     });
 
     res.json(sorted);
+  } catch (err) {
+    res.status(500).send(err);
+  }
+});
+
+app.get("/goals", async (req, res) => {
+  try {
+    const goals = await Goal.find();
+    res.json(goals);
+  } catch (err) {
+    res.status(500).send(err);
+  }
+});
+
+app.delete("/deleteGoal/:id", async (req, res) => {
+  try {
+    await Goal.findByIdAndDelete(req.params.id);
+    res.send("Goal deleted");
   } catch (err) {
     res.status(500).send(err);
   }
